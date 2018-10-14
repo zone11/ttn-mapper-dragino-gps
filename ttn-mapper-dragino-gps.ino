@@ -42,8 +42,10 @@ boolean simpleMode = false;
 unsigned int TX_INTERVAL = 10;
 
 // IO definitions
-#define LEDLORAPIN A0
-#define LEDGPSPIN A1
+#define BATTERY A0
+#define LEDLORAPIN A1
+#define LEDGPSPIN A2
+#define LEDALERT A3
 #define SWSPEED A4
 #define SWMODE A5
 
@@ -138,6 +140,7 @@ void SetGPSData()
   validDataTime = false;
   validDataDate = false;
   validDataPos = false;
+  ledGPS = false;
 
   if (gps.time.isValid()) {
     validDataTime = true;
@@ -147,8 +150,8 @@ void SetGPSData()
     validDataDate = true;
   }
 
-if (gps.location.isValid()) {
-  LatitudeBinary = ((gps.location.lat() + 90) / 180.0) * 16777215;
+  if (gps.location.isValid()) {
+    LatitudeBinary = ((gps.location.lat() + 90) / 180.0) * 16777215;
     LongitudeBinary = ((gps.location.lng() + 180) / 360.0) * 16777215;
 
     txBuffer[0] = ( LatitudeBinary >> 16 ) & 0xFF;
@@ -174,6 +177,7 @@ if (gps.location.isValid()) {
     }
 
     validDataPos = true;
+    ledGPS = true;
   }
 
   displayInfo();
@@ -265,8 +269,10 @@ void setup() {
   // LED
   pinMode(LEDLORAPIN, OUTPUT);
   pinMode(LEDGPSPIN, OUTPUT);
+  pinMode(LEDALERT, OUTPUT);
   digitalWrite(LEDLORAPIN, LOW);
   digitalWrite(LEDGPSPIN, LOW);
+  digitalWrite(LEDALERT, LOW);
 
   // Switches
   pinMode(SWMODE, INPUT);
@@ -286,14 +292,14 @@ void loop() {
   }
 
   // Switch SPEED
-  if(digitalRead(SWSPEED)) {
+  if(!digitalRead(SWSPEED)) {
     TX_INTERVAL = 30;
   } else {
     TX_INTERVAL = 5;
   }
   
   // Switch MODE
-  if(digitalRead(SWMODE)) {
+  if(!digitalRead(SWMODE)) {
     simpleMode = false;
   } else {
     simpleMode = true;
