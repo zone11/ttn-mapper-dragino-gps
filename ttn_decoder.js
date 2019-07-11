@@ -9,11 +9,13 @@ function Decoder(bytes, port) {
     decoded.longitude = (decoded.longitude / 16777215.0 * 360) - 180;
     var altValue = ((bytes[6]<<8)>>>0) + bytes[7];
     var sign = bytes[6] & (1 << 7);
+    
     if(sign) {
       decoded.altitude = 0xFFFF0000 | altValue;
     } else {
       decoded.altitude = altValue;
     }
+    
     decoded.hdop = bytes[8] / 10.0;
     decoded.google = decoded.latitude +","+decoded.longitude;
   }
